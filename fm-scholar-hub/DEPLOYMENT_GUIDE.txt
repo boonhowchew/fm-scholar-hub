@@ -1,0 +1,267 @@
+# FM Scholar Hub — Deployment Guide
+# Department of Family Medicine, UPM
+# Phase 1 — Foundation
+
+===========================================================
+WHAT YOU HAVE BUILT
+===========================================================
+
+FM Scholar Hub Phase 1 includes:
+
+1. AUTHENTICATION — Role-based login (trainee, academic_staff, admin)
+2. PERSONAL DASHBOARD — Year-aware welcome, milestones, announcements, forum activity, schedule
+3. ANNOUNCEMENTS — One-way department broadcasts with categories and pinning
+4. LIVE FORUM — Real-time peer and staff discussion with categories and replies
+5. ADMIN TOOLS — Teaching roster, leave records, assignment rules, public holidays
+6. MANAGE TRAINEES — Staff view of all trainee profiles with editing
+7. PROFILE — Personal profile management
+
+===========================================================
+STEP 1 — RUN THE DATABASE SCHEMA
+===========================================================
+
+1. Go to https://supabase.com and sign in
+2. Open your project: yklspoehrzdgtbpwxhdg
+3. Click "SQL Editor" in the left sidebar
+4. Click "New query"
+5. Open the file: supabase_schema.sql
+6. Copy the ENTIRE contents and paste into the SQL editor
+7. Click "Run" (green button)
+8. You should see: "Success. No rows returned"
+
+This creates all tables, security policies, and seed data.
+
+===========================================================
+STEP 2 — ADD YOUR CREDENTIALS TO THE .env FILE
+===========================================================
+
+Open the file called .env in the fm-scholar-hub folder.
+It currently contains:
+
+  REACT_APP_SUPABASE_URL=https://yklspoehrzdgtbpwxhdg.supabase.co
+  REACT_APP_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+  REACT_APP_ANTHROPIC_API_KEY=YOUR_ANTHROPIC_API_KEY
+
+Replace:
+- YOUR_SUPABASE_ANON_KEY → your Supabase anon/public key
+  (found at: Supabase dashboard → Project Settings → API → Project API keys → anon public)
+
+- YOUR_ANTHROPIC_API_KEY → your new Anthropic API key
+  (found at: console.anthropic.com → API Keys)
+
+IMPORTANT: Never share this .env file or commit it to GitHub.
+The .gitignore file already excludes it.
+
+===========================================================
+STEP 3 — CREATE YOUR ADMIN ACCOUNT IN SUPABASE
+===========================================================
+
+1. Go to Supabase dashboard → Authentication → Users
+2. Click "Invite user"
+3. Enter YOUR email address
+4. Click "Send invitation"
+5. Check your email and accept the invitation — set a password
+6. Now go to SQL Editor and run this query (replace the email):
+
+   UPDATE public.profiles
+   SET role = 'admin', full_name = 'YOUR FULL NAME', training_year = NULL
+   WHERE email = 'your@email.com';
+
+This gives you admin access to manage everything.
+
+===========================================================
+STEP 4 — UPLOAD TO GITHUB
+===========================================================
+
+You need a free GitHub account. Go to github.com and sign up.
+
+Then:
+1. Click the "+" icon → "New repository"
+2. Name it: fm-scholar-hub
+3. Set to Private
+4. Click "Create repository"
+5. GitHub will show you commands. Follow the "upload existing files" option.
+
+If you are not comfortable with Git commands, use GitHub Desktop:
+- Download from desktop.github.com
+- Sign in with your GitHub account
+- Click "Add" → "Add existing repository"
+- Select your fm-scholar-hub folder
+- Commit and push
+
+===========================================================
+STEP 5 — DEPLOY TO VERCEL
+===========================================================
+
+1. Go to vercel.com and sign in
+2. Click "Add New Project"
+3. Click "Import Git Repository"
+4. Select your fm-scholar-hub repository
+5. Vercel will auto-detect it as a React app
+6. BEFORE clicking Deploy — click "Environment Variables"
+7. Add these three variables one by one:
+
+   Name: REACT_APP_SUPABASE_URL
+   Value: https://yklspoehrzdgtbpwxhdg.supabase.co
+
+   Name: REACT_APP_SUPABASE_ANON_KEY
+   Value: (paste your anon key here)
+
+   Name: REACT_APP_ANTHROPIC_API_KEY
+   Value: (paste your Anthropic API key here)
+
+8. Click "Deploy"
+9. Wait 2-3 minutes
+10. Vercel gives you a URL like: https://fm-scholar-hub.vercel.app
+
+That is your live hub. Share this URL with your trainees.
+
+===========================================================
+STEP 6 — ADD YOUR FIRST TRAINEES
+===========================================================
+
+Method A — Invite via Supabase (recommended):
+1. Supabase dashboard → Authentication → Users → Invite user
+2. Enter trainee email → Send invitation
+3. Trainee receives email, sets password, logs in
+4. Trainee completes their profile on first login
+5. You then go to Manage Trainees → Edit → set their training year and posting
+
+Method B — Bulk invite:
+For adding many trainees at once, run this in SQL Editor
+(repeat for each trainee, changing email and name):
+
+  -- First create auth user via Supabase dashboard invitation
+  -- Then after they log in, update their profile:
+  UPDATE public.profiles
+  SET full_name = 'Dr Ahmad Firdaus bin Abdullah',
+      role = 'trainee',
+      training_year = 1,
+      cohort_year = 1,
+      matric_number = 'GS12345',
+      current_posting = 'HUKM — Internal Medicine'
+  WHERE email = 'ahmad.firdaus@moh.gov.my';
+
+===========================================================
+STEP 7 — ADD ACADEMIC STAFF ACCOUNTS
+===========================================================
+
+Same process as trainees. After they log in, update their role:
+
+  UPDATE public.profiles
+  SET role = 'academic_staff', full_name = 'Dr Name Here', training_year = NULL
+  WHERE email = 'staff@upm.edu.my';
+
+===========================================================
+ONGOING MANAGEMENT
+===========================================================
+
+ADDING ANNOUNCEMENTS:
+- Log in as admin or academic_staff
+- Go to Announcements → New Announcement
+- Choose category, add content, optionally pin it
+
+MANAGING ROSTER:
+- Go to Admin Tools → Teaching Roster → Add Session
+- Select presenter from list of trainees
+- Set date, time and venue
+
+APPROVING LEAVE:
+- Go to Admin Tools → Leave Records
+- Pending requests show approve/reject buttons (staff only)
+
+UPDATING TRAINEE PROFILES:
+- Go to Manage Trainees
+- Click Edit next to any trainee
+- Update training year, posting, etc.
+
+===========================================================
+CUSTOM DOMAIN (OPTIONAL)
+===========================================================
+
+If UPM provides you a subdomain like fmscholar.upm.edu.my:
+1. Vercel dashboard → your project → Settings → Domains
+2. Add your custom domain
+3. Follow DNS configuration instructions
+4. Vercel handles SSL certificate automatically
+
+===========================================================
+TROUBLESHOOTING
+===========================================================
+
+Problem: White screen after login
+Solution: Check that .env variables are correctly set in Vercel dashboard
+
+Problem: "Invalid API key" error
+Solution: Check Supabase anon key is correctly pasted in Vercel env vars
+
+Problem: Database errors on first use
+Solution: Ensure you ran the full supabase_schema.sql without errors
+
+Problem: User can log in but sees no profile
+Solution: Run the profile UPDATE query in SQL Editor (Step 6)
+
+Problem: Forum not showing real-time updates
+Solution: Check that Supabase Realtime is enabled — go to Database → Replication → enable for forum_threads and forum_replies tables
+
+===========================================================
+PHASE 2 COMING NEXT
+===========================================================
+
+Phase 2 will add:
+- SBA Arena with Pro 1 and Pro 2 domain mapping
+- KFQ Reasoning Lab with clinical scenarios
+- OSCE Prep Studio — communication, skills, telephone stations
+- LOSCE Coach — 20-minute consultation simulator
+
+Contact your developer when you are ready to proceed.
+
+===========================================================
+FILE STRUCTURE
+===========================================================
+
+fm-scholar-hub/
+├── public/
+│   └── index.html
+├── src/
+│   ├── components/
+│   │   ├── auth/
+│   │   │   └── Login.js
+│   │   └── layout/
+│   │       ├── AppLayout.js
+│   │       ├── Header.js
+│   │       └── Sidebar.js
+│   ├── hooks/
+│   │   └── useAuth.js
+│   ├── lib/
+│   │   └── supabase.js
+│   ├── pages/
+│   │   ├── Dashboard.js
+│   │   ├── Announcements.js
+│   │   ├── Forum.js
+│   │   ├── AdminTools.js
+│   │   ├── ManageUsers.js
+│   │   ├── Profile.js
+│   │   └── Placeholders.js
+│   ├── styles/
+│   │   └── global.css
+│   ├── App.js
+│   └── index.js
+├── .env                  ← ADD YOUR KEYS HERE
+├── .gitignore
+├── package.json
+├── vercel.json
+└── supabase_schema.sql   ← RUN THIS IN SUPABASE FIRST
+
+===========================================================
+SUPPORT
+===========================================================
+
+For technical issues with deployment, refer to:
+- Supabase docs: docs.supabase.com
+- Vercel docs: vercel.com/docs
+- React docs: react.dev
+
+FM Scholar Hub was designed and built for the
+Department of Family Medicine, Universiti Putra Malaysia.
+© 2025 — All rights reserved.
