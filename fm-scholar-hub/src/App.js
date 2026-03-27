@@ -1,16 +1,16 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider, useAuth } from './hooks/useAuth'
-import AppLayout from './components/layout/AppLayout'
-import Login from './components/auth/Login'
-import Dashboard from './pages/Dashboard'
-import Announcements from './pages/Announcements'
-import Forum, { ThreadDetail } from './pages/Forum'
-import AdminTools from './pages/AdminTools'
-import ManageUsers from './pages/ManageUsers'
-import Profile from './pages/Profile'
-import { ExamPrep, Research, PrimaryCare, StaffTools, Schedule } from './pages/Placeholders'
-import './styles/global.css'
+import { AuthProvider, useAuth } from 'hooks/useAuth'
+import AppLayout from 'components/layout/AppLayout'
+import Login from 'components/auth/Login'
+import Dashboard from 'pages/Dashboard'
+import Announcements from 'pages/Announcements'
+import { ThreadList, ThreadDetail } from 'pages/Forum'
+import AdminTools from 'pages/AdminTools'
+import ManageUsers from 'pages/ManageUsers'
+import Profile from 'pages/Profile'
+import { ExamPrep, Research, PrimaryCare, StaffTools, Schedule } from 'pages/Placeholders'
+import 'styles/global.css'
 
 function PrivateRoute({ children, staffOnly = false }) {
   const { user, profile, loading } = useAuth()
@@ -33,7 +33,7 @@ export default function App() {
           <Route path="/login" element={<LoginRoute />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/announcements" element={<PrivateRoute><Announcements /></PrivateRoute>} />
-          <Route path="/forum" element={<PrivateRoute><Forum /></PrivateRoute>} />
+          <Route path="/forum" element={<PrivateRoute><ThreadList /></PrivateRoute>} />
           <Route path="/forum/thread/:id" element={<PrivateRoute><ThreadDetail /></PrivateRoute>} />
           <Route path="/admin-tools" element={<PrivateRoute><AdminTools /></PrivateRoute>} />
           <Route path="/schedule" element={<PrivateRoute><Schedule /></PrivateRoute>} />
